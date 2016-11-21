@@ -38,7 +38,7 @@ class vidoMain:
         self.builder.connect_signals(dic)
         
         self.statusicon = Gtk.StatusIcon()
-        self.statusicon.set_from_file('../share/vido/ytdicon.svg')
+        self.statusicon.set_from_file('../share/vido/vido.svg')
         
         # set local appdir to save pref and url list, create if doesn't exist
         self.local_appdir = os.path.expanduser('~/.config') + "/vido/"
