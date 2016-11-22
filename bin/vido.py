@@ -131,6 +131,7 @@ class vidoMain:
         if not self.current_url: return
         self.btnDownload.set_sensitive(False)
         self.btnClear.set_sensitive(False)
+        self.listUrl.set_reorderable(False)
         location = self.folderDownload.get_current_folder()
         vido_cmd = ["youtube-dl", "-t", "-c"]+self.__download_params__()
         vido_cmd.append(self.current_url[1])
@@ -180,6 +181,7 @@ class vidoMain:
                 self.current_url = None
             self.btnDownload.set_sensitive(True)
             self.btnClear.set_sensitive(True)
+            self.listUrl.set_reorderable(True)
             self.statusbar.push(self.status_context_id,"")
             self.progress.set_text("Speed: --  ETA: --")
             self.progressbar.set_fraction(0)
