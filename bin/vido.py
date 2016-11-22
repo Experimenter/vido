@@ -1,6 +1,8 @@
 import gi, os
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
+from subprocess import *
+from tempfile import gettempdir
 
 class vidoMain:
 
@@ -20,6 +22,12 @@ class vidoMain:
         self.txtProxyPass=self.builder.get_object("txtProxyPass")
         self.txtUname=self.builder.get_object("txtUname")
         self.txtPass=self.builder.get_object("txtPass")
+        
+        self.progress=self.builder.get_object("lblProgress")
+        self.btnDownload=self.builder.get_object("btnDownload")
+        self.btnClear=self.builder.get_object("btnClear")
+        self.status_context_id = self.statusbar.get_context_id('download status')
+        
         
         dic={
             "quit": self.quit,
@@ -116,10 +124,22 @@ class vidoMain:
         pass
         
     def btnCancel_clicked(self, widget, data=None):
-        pass
+        self.__reset__("Queued","User Abort")
         
     def btnDownload_clicked(self, widget, data=None):
-        pass
+        self.current_url = self.__next_url__()
+        if not self.current_url: return
+        self.btnDownload.set_sensitive(False)
+        self.btnClear.set_sensitive(False)
+        location = self.folderDownload.get_current_folder()
+        vido_cmd = ["youtube-dl", "-t", "-c"]+self.__download_params__()
+        vido_cmd.append(self.current_url[1])
+        print (vido_cmd) #print parameters for inspection
+        self.file_stdout = open(gettempdir()+'/vido.txt', 'w')
+        self.proc = Popen(vido_cmd,  stdout=self.file_stdout, stderr=STDOUT, cwd=location)
+        self.file_stdin = open(gettempdir()+'/vido.txt', 'r')
+        self.current_url[0] = "Processing" ; self.current_url[2] = "In progress"
+        self.timer = GObject.timeout_add(1000, self.__get_status__)
         
     def btnSave_clicked(self, widget, data=None):
         self.__save_preferences__()
@@ -147,6 +167,25 @@ class vidoMain:
         # set Download folder to home
         self.folderDownload.set_current_folder(os.path.expanduser('~'))
     
+    def __reset__(self, url_status, status_msg=None):
+        try:
+            if self.proc.poll()==None:
+                self.proc.terminate()
+            GObject.source_remove(self.timer)
+            if self.current_url:
+                self.current_url[0] = url_status
+                if status_msg:
+                    self.current_url[2] = status_msg
+                self.__save_url_list__()
+                self.current_url = None
+            self.btnDownload.set_sensitive(True)
+            self.btnClear.set_sensitive(True)
+            self.statusbar.push(self.status_context_id,"")
+            self.progress.set_text("Speed: --  ETA: --")
+            self.progressbar.set_fraction(0)
+        except:
+            pass
+    
     def __load_preferences__(self):
         if os.path.isfile(self.pref_file):
             preffile = open(self.pref_file, 'r')
@@ -163,7 +202,6 @@ class vidoMain:
         line = self.folderDownload.get_current_folder()+"|"+ str(self.cboFormat.get_active())+"|"+ \
                 self.txtProxy.get_text().strip()+"|"+self.txtProxyUser.get_text().strip()+"|" + \
                 self.txtProxyPass.get_text().strip()
-        print (self.folderDownload.get_current_folder())
         preffile = open(self.pref_file, 'w')
         preffile.write(line)
         preffile.close()
@@ -186,6 +224,55 @@ class vidoMain:
             urlfile.write("%s,%s,%s\n"%(row[0],row[1],row[2]))
         urlfile.close()
         
+    def __download_params__(self):
+        params=[]
+        #format
+        params.append(self.cboFormat.get_model()[self.cboFormat.get_active()][1])
+        #proxy
+        if self.txtProxyUser.get_text().strip()!="":
+            proxy_url=self.txtProxy.get_text().split('//')
+            proxy_url=proxy_url[0]+"//"+self.txtProxyUser.get_text().strip()+":"+self.txtProxyPass.get_text()+"@"+proxy_url[1]
+        else:
+            proxy_url=self.txtProxy.get_text();
+        params+=["--proxy",proxy_url]
+        #user/pass
+        return params
+        
+    def __get_status__(self):
+        msg = self.file_stdin.readline().strip()
+        if (msg!=""):
+            msg_part = msg.split()
+            if (msg_part[0]=="ERROR:"):
+                self.__reset__("Error"," ".join(msg_part[1:]))
+                self.btnDownload_clicked(None) #invoke next queued url download
+            elif (msg_part[0]=="[download]"):
+                if msg_part[1]=="Destination:":
+                    self.current_url[2]=" ".join(msg_part[2:])
+                elif len(msg_part)>=6:
+                    if msg_part[-6]=="of" and msg_part[-4]=="at" and msg_part[-2]=="ETA":
+                        self.progress.set_text(("Speed: %s ETA: %s")%(msg_part[5],msg_part[7]))
+                        self.progressbar.set_fraction(float(msg_part[-7][:-1])/100)
+                    elif msg_part[-4]=="of" and msg_part[-2]=="in":
+                        self.__reset__("Done")
+                        self.btnDownload_clicked(None) #invoke next queued url download
+                    elif " ".join(msg_part[-4:])=="has already been downloaded":
+                        self.__reset__("Done"," ".join(msg_part[1:-4]))
+                        self.btnDownload_clicked(None) #invoke next queued url download
+            else:
+                self.statusbar.push(self.status_context_id,msg)
+        #If process has exited report termination
+        elif self.proc.poll() != None:
+            self.__reset__("Queued", 'Unexpected Termination')
+            self.btnDownload_clicked(None) #invoke re-download
+        return True
+        
+            
+    def __next_url__(self):
+        for row in self.listUrl.get_model():
+            if row[0] == 'Queued':
+                return row
+                break
+        return None
 
 if __name__ =='__main__':
     #replace if vidoMain is not the main class

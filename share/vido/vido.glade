@@ -624,12 +624,13 @@
                         <child>
                           <object class="GtkEntry" id="txtProxy">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can_focus">True</property>
                             <property name="is_focus">True</property>
                             <property name="can_default">True</property>
                             <property name="has_tooltip">True</property>
                             <property name="tooltip_markup" translatable="yes">Proxy Server details. Leave blank if none. Save and application restart required for setting to take effect</property>
                             <property name="tooltip_text" translatable="yes">Proxy Server details. Leave blank if none. Save and application restart required for setting to take effect</property>
+                            <property name="input_purpose">url</property>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -641,7 +642,7 @@
                           <object class="GtkLabel" id="lblProxyEx">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">eg: 127.0.0.1:8080. Don't use http://. Save &amp; restart</property>
+                            <property name="label" translatable="yes">eg: socks5://127.0.0.1:8080/</property>
                             <property name="justify">center</property>
                             <property name="xalign">0</property>
                           </object>
@@ -688,11 +689,12 @@
                     <child>
                       <object class="GtkEntry" id="txtProxyUser">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can_focus">True</property>
                         <property name="can_default">True</property>
                         <property name="has_tooltip">True</property>
                         <property name="tooltip_markup" translatable="yes">Username for proxy. Leave blank if none</property>
                         <property name="tooltip_text" translatable="yes">Username for proxy. Leave blank if none</property>
+                        <property name="input_purpose">name</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -735,6 +737,7 @@
                         <property name="tooltip_markup" translatable="yes">Password for proxy. Leave blank if none</property>
                         <property name="tooltip_text" translatable="yes">Password for proxy. Leave blank if none</property>
                         <property name="visibility">False</property>
+                        <property name="input_purpose">password</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -863,7 +866,7 @@
                     <property name="is_focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="visibility">False</property>
-                    <property name="invisible_char">*</property>
+                    <property name="input_purpose">password</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
