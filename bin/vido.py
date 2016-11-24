@@ -170,7 +170,9 @@ class vidoMain:
     
     def __reset__(self, url_status, status_msg=None):
         try:
-            if self.proc.poll()==None:
+            if url_status=="Done":
+            	self.proc=None
+            elif self.proc.poll()==None:
                 self.proc.terminate()
             GObject.source_remove(self.timer)
             if self.current_url:
@@ -249,7 +251,7 @@ class vidoMain:
                 self.btnDownload_clicked(None) #invoke next queued url download
             elif (msg_part[0]=="[download]"):
                 if msg_part[1]=="Destination:":
-                    self.current_url[2]=" ".join(msg_part[2:])
+                    self.current_url[2]=" ".join(msg_part[2:]) # set file name as message 
                 elif len(msg_part)>=6:
                     if msg_part[-6]=="of" and msg_part[-4]=="at" and msg_part[-2]=="ETA":
                         self.progress.set_text(("Speed: %s ETA: %s")%(msg_part[5],msg_part[7]))
@@ -258,7 +260,7 @@ class vidoMain:
                         self.__reset__("Done")
                         self.btnDownload_clicked(None) #invoke next queued url download
                     elif " ".join(msg_part[-4:])=="has already been downloaded":
-                        self.__reset__("Done"," ".join(msg_part[1:-4]))
+                        self.__reset__("Done"," ".join(msg_part[1:-4])) #send downloaded filename
                         self.btnDownload_clicked(None) #invoke next queued url download
             else:
                 self.statusbar.push(self.status_context_id,msg)
