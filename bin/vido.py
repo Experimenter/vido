@@ -160,7 +160,7 @@ class vidoMain:
                   }
 
         store = self.cboFormat.get_model()
-        store.append(["Default",""])
+        store.append(["Default","--format=best"])
         for key in sorted(vf_list):
             store.append([key,vf_list[key]])
         self.cboFormat.set_active(0)
