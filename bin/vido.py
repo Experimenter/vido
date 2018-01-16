@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import gi, os
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject
@@ -155,7 +156,6 @@ class vidoMain:
                     "flv 480p": "--format=35",
                     "mp4 360p": "--format=18",
                     "mp4 720p": "--format=22",
-                    "mp4 720p": "--format=hd720",
                     "mp4 480p": "--format=hq"
                   }
 
