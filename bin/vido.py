@@ -1,9 +1,15 @@
 #!/usr/bin/env python
-import gi, os
+import gi, os.path, sys
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject
 from subprocess import *
 from tempfile import gettempdir
+
+try:
+    print (sys.argv)
+    os.chdir('/'.join(sys.argv[0].split('/')[0:-1]))
+except:
+    pass
 
 class vidoMain:
 
@@ -12,6 +18,7 @@ class vidoMain:
         self.builder = Gtk.Builder()
         self.builder.add_from_file("../share/vido/vido.glade")
         
+        self.winmain = self.builder.get_object("vidoMain")
         self.listUrl=self.builder.get_object("listUrl")
         self.txtUrl=self.builder.get_object("txtUrl")
         self.progressbar=self.builder.get_object("progressbar")
@@ -46,6 +53,7 @@ class vidoMain:
         }
         self.builder.connect_signals(dic)
         
+        self.winmain.connect("delete-event", self.quit)
         self.statusicon = Gtk.StatusIcon()
         self.statusicon.set_from_file('../share/vido/vido.svg')
         
@@ -64,6 +72,7 @@ class vidoMain:
         self.__load_url_list__()
         
     def quit(self, widget, data=None):
+        self.btnCancel_clicked(None)
         exit()
         
     def btnAdd_clicked(self, widget, data=None):
@@ -134,7 +143,7 @@ class vidoMain:
         self.btnClear.set_sensitive(False)
         self.listUrl.set_reorderable(False)
         location = self.folderDownload.get_current_folder()
-        vido_cmd = ["youtube-dl", "-t", "-c"]+self.__download_params__()
+        vido_cmd = ["youtube-dl", "--output=%(title)s.%(ext)s", "-c"]+self.__download_params__()
         vido_cmd.append(self.current_url[1])
         print (vido_cmd) #print parameters for inspection
         self.file_stdout = open(gettempdir()+'/vido.txt', 'w')
@@ -148,22 +157,16 @@ class vidoMain:
         
     def __init_ui__(self):
         # initialise format combo box
-        vf_list = { "Audio m4a":"--format=140",
-                    "Mobile"  : "--format=17",
-                    "Hi-def"  : "--format=35",
-                    "flv 240p": "--format=5",
-                    "flv 360p": "--format=34",
-                    "flv 480p": "--format=35",
-                    "mp4 360p": "--format=18",
-                    "mp4 720p": "--format=22",
-                    "mp4 480p": "--format=hq"
+        vf_list = { "Best" : "--format=best",
+                    "Audio m4a":"--format=bestaudio[ext=m4a]",
+                    "Video 360p mp4": "--format=best[height<=360][ext=mp4]",
+                    "Video 720p mp4": "--format=best[height<=720][ext=mp4]"
                   }
 
         store = self.cboFormat.get_model()
-        store.append(["Default","--format=best"])
-        for key in sorted(vf_list):
+        for key in vf_list:
             store.append([key,vf_list[key]])
-        self.cboFormat.set_active(0)
+        self.cboFormat.set_active(1)
         
         # set Download folder to home
         self.folderDownload.set_current_folder(os.path.expanduser('~'))
@@ -171,7 +174,7 @@ class vidoMain:
     def __reset__(self, url_status, status_msg=None):
         try:
             if url_status=="Done":
-            	self.proc=None
+                self.proc=None
             elif self.proc.poll()==None:
                 self.proc.terminate()
             GObject.source_remove(self.timer)
