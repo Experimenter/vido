@@ -56,6 +56,9 @@ class vidoMain:
         self.winmain.connect("delete-event", self.quit)
         self.statusicon = Gtk.StatusIcon()
         self.statusicon.set_from_file('../share/vido/vido.svg')
+        self.statusicon.connect('activate', self.status_clicked)
+        self.statusicon.set_tooltip_text("Vido")
+        self.iconified = False
         
         # set local appdir to save pref and url list, create if doesn't exist
         self.local_appdir = os.path.expanduser('~/.config') + "/vido/"
@@ -280,6 +283,17 @@ class vidoMain:
                 return row
                 break
         return None
+        
+    def status_clicked(self, widget):
+        ## on clicking the status icon show window and set default tab to downloads ##
+        if self.iconified:
+            self.winmain.show()
+            self.winmain.deiconify()
+            #self.builder.get_object("notebook").set_current_page(0)
+            self.iconified = False
+        else:
+            self.winmain.hide()
+            self.iconified=True
 
 if __name__ =='__main__':
     #replace if vidoMain is not the main class
