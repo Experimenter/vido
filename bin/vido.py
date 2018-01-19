@@ -153,7 +153,7 @@ class vidoMain:
         self.btnClear.set_sensitive(False)
         self.listUrl.set_reorderable(False)
         location = self.folderDownload.get_current_folder()
-        vido_cmd = ["youtube-dl", "--output=%(title)s.%(ext)s", "-c"]+self.__download_params__()
+        vido_cmd = ["youtube-dl", "--output=%(title)s_%(height)s.%(ext)s", "-c"]+self.__download_params__()
         vido_cmd.append(self.current_url[1])
         print (vido_cmd) #print parameters for inspection
         self.file_stdout = open(gettempdir()+'/vido.txt', 'w')
