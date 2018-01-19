@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 import gi, os.path, sys
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, Gdk, GObject
 from subprocess import *
 from tempfile import gettempdir
 
 try:
-    print (sys.argv)
     os.chdir('/'.join(sys.argv[0].split('/')[0:-1]))
 except:
     pass
@@ -59,6 +58,8 @@ class vidoMain:
         self.statusicon.connect('activate', self.status_clicked)
         self.statusicon.set_tooltip_text("Vido")
         self.iconified = False
+        
+        self.init_droparea()
         
         # set local appdir to save pref and url list, create if doesn't exist
         self.local_appdir = os.path.expanduser('~/.config') + "/vido/"
@@ -134,7 +135,13 @@ class vidoMain:
         self.__save_url_list__()
         
     def btnDrop_clicked(self, widget, data=None):
-        pass
+        if self.w.get_property('visible'):
+            self.pos = self.w.get_position()
+            self.w.hide()
+        else:
+            try: self.w.move(self.pos[0],self.pos[1])
+            except: pass
+            self.w.show_all()
         
     def btnCancel_clicked(self, widget, data=None):
         self.__reset__("Queued","User Abort")
@@ -167,7 +174,7 @@ class vidoMain:
                   }
 
         store = self.cboFormat.get_model()
-        for key in vf_list:
+        for key in sorted(vf_list):
             store.append([key,vf_list[key]])
         self.cboFormat.set_active(1)
         
@@ -294,6 +301,39 @@ class vidoMain:
         else:
             self.winmain.hide()
             self.iconified=True
+    
+    def init_droparea(self):
+        ###initialize drop window and connect to accept dropped urls###
+        self.w = Gtk.Window()
+        self.w.set_skip_taskbar_hint(True)
+        self.box = Gtk.EventBox ()
+        self.w.add (self.box)
+        drop_image = Gtk.Image()
+        drop_image.set_from_file('../share/vido/vido.svg')
+        self.box.add(drop_image)
+        self.w.set_size_request(30,30)
+        self.w.set_decorated(False)
+        self.w.set_deletable(False)
+        self.w.set_keep_above(True)
+        self.w.stick()
+        self.w.drag_dest_set(Gtk.DestDefaults.ALL,None,Gdk.DragAction.COPY)
+        self.w.drag_dest_add_text_targets()
+        self.w.connect('drag_data_received', self.linkdrop)
+        self.box.connect('button_press_event',self.drag_window)
+        
+    def drag_window(self,widget,event):
+        ## move droparea on dragging ##
+        self.w.begin_move_drag(event.button, int(event.x_root), int(event.y_root), event.time);
+        return True
+    
+    def linkdrop(self,widget, context, x, y, data, info, time):
+        ## get url and queue it ##
+        url = data.get_text().strip()
+        if url!= "":
+            self.builder.get_object("listUrl").get_model().append(["Queued",url,''])
+        self.saveurllist()
+        context.finish(True, False, time)
+        return True
 
 if __name__ =='__main__':
     #replace if vidoMain is not the main class
