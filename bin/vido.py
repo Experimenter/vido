@@ -176,7 +176,7 @@ class vidoMain:
         store = self.cboFormat.get_model()
         for key in sorted(vf_list):
             store.append([key,vf_list[key]])
-        self.cboFormat.set_active(1)
+        self.cboFormat.set_active_id("Best")
         
         # set Download folder to home
         self.folderDownload.set_current_folder(os.path.expanduser('~'))
@@ -209,14 +209,14 @@ class vidoMain:
             prefs = preffile.readline().strip().split('|')
             if len(prefs)==5:
                 self.folderDownload.set_current_folder(prefs[0])
-                self.cboFormat.set_active(int(prefs[1]))
+                self.cboFormat.set_active_id(prefs[1])
                 self.txtProxy.set_text(prefs[2])
                 self.txtProxyUser.set_text(prefs[3])
                 self.txtProxyPass.set_text(prefs[4])
             preffile.close()
     
     def __save_preferences__(self):
-        line = self.folderDownload.get_current_folder()+"|"+ str(self.cboFormat.get_active())+"|"+ \
+        line = self.folderDownload.get_current_folder()+"|"+ str(self.cboFormat.get_active_id())+"|"+ \
                 self.txtProxy.get_text().strip()+"|"+self.txtProxyUser.get_text().strip()+"|" + \
                 self.txtProxyPass.get_text().strip()
         preffile = open(self.pref_file, 'w')
