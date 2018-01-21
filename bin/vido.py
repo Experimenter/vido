@@ -167,15 +167,15 @@ class vidoMain:
         
     def __init_ui__(self):
         # initialise format combo box
-        vf_list = { "Best" : "--format=best",
-                    "Audio m4a":"--format=bestaudio[ext=m4a]",
-                    "Video 360p mp4": "--format=best[height<=360][ext=mp4]",
-                    "Video 720p mp4": "--format=best[height<=720][ext=mp4]"
-                  }
-
+        self.vf_list = {"Best" : "--format=best",
+                        "Audio m4a":"--format=bestaudio[ext=m4a]",
+                        "Video 360p mp4": "--format=best[height<=360][ext=mp4]",
+                        "Video 720p mp4": "--format=best[height<=720][ext=mp4]"
+                    }
+            
         store = self.cboFormat.get_model()
-        for key in sorted(vf_list):
-            store.append([key,vf_list[key]])
+        for key in sorted(self.vf_list):
+            store.append([key])
         self.cboFormat.set_active_id("Best")
         
         # set Download folder to home
@@ -244,7 +244,7 @@ class vidoMain:
     def __download_params__(self):
         params=[]
         #format
-        params.append(self.cboFormat.get_model()[self.cboFormat.get_active()][1])
+        params.append(self.vf_list[self.cboFormat.get_active_id()])
         #proxy
         if self.txtProxyUser.get_text().strip()!="":
             proxy_url=self.txtProxy.get_text().split('//')
