@@ -144,6 +144,7 @@ class vidoMain:
             except: 
                 pass
             self.w.show_all()
+        return True
         
     def btnCancel_clicked(self, widget, data=None):
         self.__reset__("Queued","User Abort")
@@ -322,6 +323,8 @@ class vidoMain:
         self.w.drag_dest_add_text_targets()
         self.w.connect('drag_data_received', self.linkdrop)
         self.box.connect('button_press_event',self.drag_window)
+        ## On closing the drop window explicitly hide window ##
+        self.w.connect('delete_event',self.btnDrop_clicked) 
         
     def drag_window(self,widget,event):
         ## move droparea on dragging ##
