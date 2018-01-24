@@ -139,8 +139,10 @@ class vidoMain:
             self.pos = self.w.get_position()
             self.w.hide()
         else:
-            try: self.w.move(self.pos[0],self.pos[1])
-            except: pass
+            try: 
+                self.w.move(self.pos[0],self.pos[1])
+            except: 
+                pass
             self.w.show_all()
         
     def btnCancel_clicked(self, widget, data=None):
@@ -331,7 +333,7 @@ class vidoMain:
         url = data.get_text().strip()
         if url!= "":
             self.builder.get_object("listUrl").get_model().append(["Queued",url,''])
-        self.saveurllist()
+        self.__save_url_list__()
         context.finish(True, False, time)
         return True
 
