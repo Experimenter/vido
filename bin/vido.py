@@ -49,6 +49,7 @@ class vidoMain:
             "btnCancel_clicked": self.btnCancel_clicked,
             "btnDownload_clicked": self.btnDownload_clicked,
             "btnSave_clicked": self.btnSave_clicked,
+            "folderDownload_changed": self.folderDownload_changed
         }
         self.builder.connect_signals(dic)
         
@@ -167,6 +168,9 @@ class vidoMain:
         
     def btnSave_clicked(self, widget, data=None):
         self.__save_preferences__()
+
+    def folderDownload_changed(self,widget):
+        self.folderDownload.set_current_folder(self.folderDownload.get_filename())
         
     def __init_ui__(self):
         # initialise format combo box
