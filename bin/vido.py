@@ -232,21 +232,16 @@ class vidoMain:
 
     def __load_url_list__(self):
         if os.path.isfile(self.url_file):
-            urlfile = open(self.url_file,"r")
-            for urls in urlfile:
-                try:
-                    status, url, msg = urls.strip('\n').split(',')
-                    self.listUrl.get_model().append([status,url,msg])
-                except:
-                    pass
-            urlfile.close()
+            with open(self.url_file,"r") as urlfile:
+                for urls in urlfile:
+                    status, url, *msg = urls.strip('\n').split(',')
+                    self.listUrl.get_model().append([status,url,", ".join(msg)])
 
     def __save_url_list__(self):
-        urlfile = open(self.url_file,"w")
-        urls = self.builder.get_object("listUrl").get_model()
-        for row in urls:
-            urlfile.write("%s,%s,%s\n"%(row[0],row[1],row[2]))
-        urlfile.close()
+        with open(self.url_file,"w") as urlfile:
+            urls = self.builder.get_object("listUrl").get_model()
+            for row in urls:
+                urlfile.write("%s,%s,%s\n"%(row[0],row[1],row[2]))
 
     def __download_params__(self):
         params=[]
@@ -276,7 +271,7 @@ class vidoMain:
                     if msg_part[-6]=="of" and msg_part[-4]=="at" and msg_part[-2]=="ETA":
                         self.progress.set_text(("Speed: %s ETA: %s")%(msg_part[5],msg_part[7]))
                         self.progressbar.set_fraction(float(msg_part[-7][:-1])/100)
-                    elif msg_part[-4]=="of" and msg_part[-2]=="in":
+                    elif msg_part[-4]=="of" and msg_part[-2]=="in": #100% of SIZE in TIME
                         self.__reset__("Done")
                         self.btnDownload_clicked(None) #invoke next queued url download
                     elif " ".join(msg_part[-4:])=="has already been downloaded":
