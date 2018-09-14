@@ -15,7 +15,7 @@ class vidoMain:
     def __init__( self ):
 
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("../share/vido/vido.glade")
+        self.builder.add_from_file("vido.glade")
 
         self.winmain = self.builder.get_object("vidoMain")
         self.listUrl=self.builder.get_object("listUrl")
@@ -55,7 +55,7 @@ class vidoMain:
 
         self.winmain.connect("delete-event", self.quit)
         self.statusicon = Gtk.StatusIcon()
-        self.statusicon.set_from_file('../share/vido/vido.svg')
+        self.statusicon.set_from_file('vido.svg')
         self.statusicon.connect('activate', self.status_clicked)
         self.statusicon.set_tooltip_text("Vido")
         self.iconified = False
@@ -314,7 +314,7 @@ class vidoMain:
         self.box = Gtk.EventBox ()
         self.w.add (self.box)
         drop_image = Gtk.Image()
-        drop_image.set_from_file('../share/vido/vido.svg')
+        drop_image.set_from_file('vido.svg')
         self.box.add(drop_image)
         self.w.set_size_request(30,30)
         self.w.set_decorated(False)
