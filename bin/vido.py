@@ -174,10 +174,10 @@ class vidoMain:
 
     def __init_ui__(self):
         # initialise format combo box
-        self.vf_list = {"Best" : "--format=best",
-                        "Audio m4a":"--format=bestaudio[ext=m4a]",
-                        "Video 360p mp4": "--format=best[height<=360][ext=mp4]",
-                        "Video 720p mp4": "--format=best[height<=720][ext=mp4]"
+        self.vf_list = {"Best" : "best",
+                        "Audio m4a": "bestaudio[ext=m4a]",
+                        "Video 360p mp4": "best[height<=360][ext=mp4]",
+                        "Video 720p mp4": "best[height<=720][ext=mp4]"
                     }
 
         store = self.cboFormat.get_model()
@@ -216,14 +216,15 @@ class vidoMain:
             prefs = preffile.readline().strip().split('|')
             if len(prefs)==5:
                 self.folderDownload.set_current_folder(prefs[0])
-                self.cboFormat.set_active_id(prefs[1])
+                if (prefs[1] in  self.vf_list.keys()): self.cboFormat.set_active_id(prefs[1])
+                else: self.cboFormat.get_child().set_text(prefs[1])
                 self.txtProxy.set_text(prefs[2])
                 self.txtProxyUser.set_text(prefs[3])
                 self.txtProxyPass.set_text(prefs[4])
             preffile.close()
 
     def __save_preferences__(self):
-        line = self.folderDownload.get_current_folder()+"|"+ str(self.cboFormat.get_active_id())+"|"+ \
+        line = self.folderDownload.get_current_folder()+"|"+ str(self.cboFormat.get_child().get_text())+"|"+ \
                 self.txtProxy.get_text().strip()+"|"+self.txtProxyUser.get_text().strip()+"|" + \
                 self.txtProxyPass.get_text().strip()
         preffile = open(self.pref_file, 'w')
@@ -246,7 +247,9 @@ class vidoMain:
     def __download_params__(self):
         params=[]
         #format
-        params.append(self.vf_list[self.cboFormat.get_active_id()])
+        format_str = "--format=%s"%(self.vf_list[self.cboFormat.get_active_id()]
+            if self.cboFormat.get_active_id() else self.cboFormat.get_child().get_text())
+        params.append(format_str)
         #proxy
         if self.txtProxyUser.get_text().strip()!="":
             proxy_url=self.txtProxy.get_text().split('//')
