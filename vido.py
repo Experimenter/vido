@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import gi, os.path, sys
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gtk, Gdk, GObject, GLib
 from subprocess import *
 from tempfile import gettempdir
 
@@ -35,24 +35,7 @@ class vidoMain:
         self.btnClear=self.builder.get_object("btnClear")
         self.status_context_id = self.statusbar.get_context_id('download status')
 
-
-        dic={
-            "quit": self.quit,
-            "btnAdd_clicked": self.btnAdd_clicked,
-            "btnReload_clicked": self.btnReload_clicked,
-            "btnPause_clicked": self.btnPause_clicked,
-            "btnDelete_clicked": self.btnDelete_clicked,
-            "btnUp_clicked": self.btnUp_clicked,
-            "btnDown_clicked": self.btnDown_clicked,
-            "btnClear_clicked": self.btnClear_clicked,
-            "btnDrop_clicked": self.btnDrop_clicked,
-            "btnCancel_clicked": self.btnCancel_clicked,
-            "btnDownload_clicked": self.btnDownload_clicked,
-            "btnSave_clicked": self.btnSave_clicked,
-            "folderDownload_changed": self.folderDownload_changed
-        }
-        self.builder.connect_signals(dic)
-
+        self.builder.connect_signals(self)
         self.winmain.connect("delete-event", self.quit)
         self.statusicon = Gtk.StatusIcon()
         self.statusicon.set_from_file('vido.svg')
@@ -159,12 +142,12 @@ class vidoMain:
         location = self.folderDownload.get_current_folder()
         vido_cmd = ["youtube-dl", "--output=%(title)s_%(height)s.%(ext)s", "-c","--no-playlist"]+self.__download_params__()
         vido_cmd.append(self.current_url[1])
-        print (vido_cmd) #print parameters for inspection
+        print (" ".join(vido_cmd)) #print parameters for inspection
         self.file_stdout = open(gettempdir()+'/vido.txt', 'w')
         self.proc = Popen(vido_cmd,  stdout=self.file_stdout, stderr=STDOUT, cwd=location)
         self.file_stdin = open(gettempdir()+'/vido.txt', 'r')
         self.current_url[0] = "Processing" ; self.current_url[2] = "In progress"
-        self.timer = GObject.timeout_add(1000, self.__get_status__)
+        self.timer = GLib.timeout_add(1000, self.__get_status__)
 
     def btnSave_clicked(self, widget, data=None):
         self.__save_preferences__()
@@ -194,7 +177,7 @@ class vidoMain:
                 self.proc=None
             elif self.proc.poll()==None:
                 self.proc.terminate()
-            GObject.source_remove(self.timer)
+            GLib.source_remove(self.timer)
             if self.current_url:
                 self.current_url[0] = url_status
                 if status_msg:
