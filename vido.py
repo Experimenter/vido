@@ -246,29 +246,28 @@ class vidoMain:
     def __get_status__(self):
         msg = self.file_stdin.readline().strip()
         if (msg!=""):
-            msg_part = msg.split()
-            if (msg_part[0]=="ERROR:"):
-                self.__reset__("Error"," ".join(msg_part[1:]))
-                self.btnDownload_clicked(None) #invoke next queued url download
-            elif (msg_part[0]=="[download]"):
-                if msg_part[1]=="Destination:":
-                    self.current_url[2]=" ".join(msg_part[2:]) # set file name as message
-                elif len(msg_part)>=6:
-                    if msg_part[-6]=="of" and msg_part[-4]=="at" and msg_part[-2]=="ETA":
-                        self.progress.set_text(("Speed: %s ETA: %s")%(msg_part[5],msg_part[7]))
-                        self.progressbar.set_fraction(float(msg_part[-7][:-1])/100)
-                    elif msg_part[-4]=="of" and msg_part[-2]=="in": #100% of SIZE in TIME
-                        self.__reset__("Done")
-                        self.btnDownload_clicked(None) #invoke next queued url download
-                    elif " ".join(msg_part[-4:])=="has already been downloaded":
-                        self.__reset__("Done"," ".join(msg_part[1:-4])) #send downloaded filename
-                        self.btnDownload_clicked(None) #invoke next queued url download
-            else:
-                self.statusbar.push(self.status_context_id,msg)
+            while (msg!=""):
+                msg_part = msg.split()
+                if (msg_part[0]=="ERROR:"):
+                    self.__reset__("Error"," ".join(msg_part[1:]))
+                    self.btnDownload_clicked(None) # invoke next queued url download
+                elif (msg_part[0]=="[download]"):
+                    if msg_part[1]=="Destination:":
+                        self.current_url[2]=" ".join(msg_part[2:]) # set file name as message
+                    elif len(msg_part)>=6:
+                        if msg_part[-6]=="of" and msg_part[-4]=="at" and msg_part[-2]=="ETA":
+                            self.progress.set_text(("Speed: %s ETA: %s")%(msg_part[5],msg_part[7]))
+                            self.progressbar.set_fraction(float(msg_part[-7][:-1])/100)
+                        elif "has already been downloaded" in msg:
+                            self.__reset__("Done",msg[msg.find(']')+2:msg.rfind('has already')-1]) # set final filename
+                            self.btnDownload_clicked(None) # Download the next file
+                else:
+                    self.statusbar.push(self.status_context_id,msg)
+                msg = self.file_stdin.readline().strip()
         #If process has exited report termination
         elif self.proc.poll() != None:
-            self.__reset__("Queued", 'Unexpected Termination')
-            self.btnDownload_clicked(None) #invoke re-download
+            self.__reset__("Queued", 'download terminated, retrying..')
+            self.btnDownload_clicked(None) # invoke re-download
         return True
 
 
