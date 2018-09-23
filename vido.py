@@ -140,7 +140,7 @@ class vidoMain:
         self.btnClear.set_sensitive(False)
         self.listUrl.set_reorderable(False)
         location = self.folderDownload.get_current_folder()
-        vido_cmd = ["youtube-dl", "--output=%(title)s_%(height)s.%(ext)s", "-c","--no-playlist"]+self.__download_params__()
+        vido_cmd = ["youtube-dl", "--output=%(title)s_%(height)s.%(ext)s", "-c","--no-playlist", "--restrict-filenames"]+self.__download_params__()
         vido_cmd.append(self.current_url[1])
         print (" ".join(vido_cmd)) #print parameters for inspection
         self.file_stdout = open(gettempdir()+'/vido.txt', 'w')
@@ -250,6 +250,9 @@ class vidoMain:
                 msg_part = msg.split()
                 if (msg_part[0]=="ERROR:"):
                     self.__reset__("Error"," ".join(msg_part[1:]))
+                    self.btnDownload_clicked(None) # invoke next queued url download
+                elif (msg_part[0] == "Traceback"):
+                    self.__reset__("Error",self.file_stdin.readlines()[-1].strip())
                     self.btnDownload_clicked(None) # invoke next queued url download
                 elif (msg_part[0]=="[download]"):
                     if msg_part[1]=="Destination:":
